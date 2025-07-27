@@ -41,12 +41,12 @@ func createPostRequest() {
 	fmt.Println("Server answered: ", string(body))
 }
 
-func main() {
+func createPutRequest(id int) {
 	client := &http.Client{
 		Timeout: 4 * time.Second,
 	}
-	user := []byte(`{"id":"4", "name": "Dmitry", "email": "Dmitry@gmail.com"}`)
-	req, err := http.NewRequest("PUT", "http://127.0.0.1:8080/users/4", bytes.NewBuffer(user))
+	user := []byte(fmt.Sprintf(`{"id":"%d", "name": "Dmitry", "email": "Dmitry@gmail.com"}`, id))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("http://127.0.0.1:8080/users/%d", id), bytes.NewBuffer(user))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -54,6 +54,32 @@ func main() {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Cookie", "HelloFromCookie")
 	resp, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("ReadAll error", err)
+		return
+	}
+	fmt.Println("Server answered: ", string(body))
+}
+
+func main() {
+	id := 4
+	client := &http.Client{
+		Timeout: 4 * time.Second,
+	}
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("http://127.0.0.1:8080/users/%d", id), nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		fmt.Println(err)
 		return
