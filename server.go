@@ -53,6 +53,21 @@ func UpdateUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response{Message: "No such user"})
 }
 
+func DeleteUsersHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := params["id"]
+	for i, user := range users {
+		if user.Id == id {
+			users = append(users[:i], users[i+1:]...)
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(Response{Message: "User deleted"})
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(Response{Message: "User not found"})
+}
+
 func main() {
 	users = append(users, User{Id: "1", Name: "Vasya", Email: "vasya@mail.ru"})
 	r := mux.NewRouter()
@@ -60,6 +75,7 @@ func main() {
 	r.HandleFunc("/users", GetUsersHandler).Methods("GET")
 	r.HandleFunc("/users", CreateUsersHandler).Methods("POST")
 	r.HandleFunc("/users/{id}", UpdateUsersHandler).Methods("PUT")
+	r.HandleFunc("/users/{id}", DeleteUsersHandler).Methods("DELETE")
 	fmt.Println("server staring...")
 	http.ListenAndServe(":8080", r)
 }
