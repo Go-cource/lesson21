@@ -36,7 +36,21 @@ func CreateUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users = append(users, user)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(Response{Message: "New user appended"})
+}
 
+func UpdateUsersHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := params["id"]
+	for i, user := range users {
+		if user.Id == id {
+			json.NewDecoder(r.Body).Decode(&users[i])
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(Response{Message: "User data changed"})
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(Response{Message: "No such user"})
 }
 
 func main() {
@@ -45,6 +59,7 @@ func main() {
 	r.HandleFunc("/", IndexHandler).Methods("GET")
 	r.HandleFunc("/users", GetUsersHandler).Methods("GET")
 	r.HandleFunc("/users", CreateUsersHandler).Methods("POST")
+	r.HandleFunc("/users/{id}", UpdateUsersHandler).Methods("PUT")
 	fmt.Println("server staring...")
 	http.ListenAndServe(":8080", r)
 }
